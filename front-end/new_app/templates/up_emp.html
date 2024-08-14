@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Careers</title>
+</head>
+<body>
+    <div id="app">
+        <p>Open positions</p>
+        <a href="/career/panel/logout">Logout</a>
+        <a href="/career/panel/add_career">Add career</a>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="position in positions" :key="position.id">
+                    <td>{{ position.title }}</td>
+                    <td>{{ position.location }}</td>
+                    <td>
+                        <a :href="'/career/panel/position/' + position.id">Edit</a>
+                    </td>
+                    <td>
+                        <a :href="'/applicant?name=' + position.title">View({{ position.count_position }})</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.21.4/dist/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                positions: []
+            },
+            mounted() {
+                this.fetchPositions();
+            },
+            methods: {
+                async fetchPositions() {
+                    try {
+                        const response = await axios.get('/api/positions'); // Replace with your actual API endpoint
+                        this.positions = response.data;
+                    } catch (error) {
+                        console.error('Error fetching positions:', error);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

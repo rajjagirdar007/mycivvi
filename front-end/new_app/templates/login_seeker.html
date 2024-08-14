@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Page</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5" id="app">
+  <h2>Login Form</h2>
+  <form action="https://mycivvi.com/job-seeker/login" method="post">
+    <div class="form-group">
+      <label for="email">Email address:</label>
+      <input type="email" class="form-control" id="email" name="email" placeholder="Enter email">
+    </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" class="form-control" id="password" name="password" placeholder="Enter password">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+<!--
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    email: '',
+    password: ''
+  },
+  methods: {
+    login: function() {
+      axios.post('https://mycivvi.com/job-seeker/login', {
+        email: this.email,
+        password: this.password
+      })
+      .then(function(response) {
+        console.log(response.data);
+        // do something with the response
+      })
+      .catch(function(error) {
+        console.log(error);
+        // handle the error
+      });
+    }
+  }
+});
+</script>
+-->
+</body>
+</html>
+

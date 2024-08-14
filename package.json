@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "handlebars": "^4.7.7",
+    "hbs": "^4.1.2",
+    "jsonwebtoken": "^8.5.1",
+    "mysql": "^2.18.1",
+    "node": "^16.10.0",
+    "pdf-to-text": "^0.0.7",
+    "resume-parser": "^1.1.0",
+    "router": "^1.3.5",
+    "simple-resume-parser": "^1.1.8",
+    "textract": "^2.5.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "mycivvi.com",
+  "version": "1.0.0",
+  "main": "db_civvi.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

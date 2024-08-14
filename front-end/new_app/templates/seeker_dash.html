@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>User Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <style>
+        .flex{
+            display: flex;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <nav class="navbar navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">MyCivvi</a>
+
+          <ul class="navbar-nav ">
+            <li class="nav-item active flex">
+              <a class="nav-link" href="#"
+                >Home <span class="sr-only">(current)</span></a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Pricing</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdownMenuLink"
+                role="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                Dropdown link
+              </a>
+              <div
+                class="dropdown-menu"
+                aria-labelledby="navbarDropdownMenuLink"
+              >
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+              </div>
+            </li>
+          </ul>
+      </nav>
+
+
+
+
+      <div>
+
+        <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action active">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">List group item heading</h5>
+                <small>3 days ago</small>
+              </div>
+              <p class="mb-1">Some placeholder content in a paragraph.</p>
+              <small>And some small print.</small>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">List group item heading</h5>
+                <small class="text-body-secondary">3 days ago</small>
+              </div>
+              <p class="mb-1">Some placeholder content in a paragraph.</p>
+              <small class="text-body-secondary">And some muted small print.</small>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">List group item heading</h5>
+                <small class="text-body-secondary">3 days ago</small>
+              </div>
+              <p class="mb-1">Some placeholder content in a paragraph.</p>
+              <small class="text-body-secondary">And some muted small print.</small>
+            </a>
+          </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          firstName: "",
+          lastName: "",
+          seeker_id: "",
+          email: "",
+          phoneNumber: "",
+          interests: "",
+          currentTitle: "",
+          currentCompany: "",
+          password: "",
+          applied: [],
+          resumePath: "",
+          jobs: [],
+        },
+        mounted: function () {
+          var self = this;
+          axios
+            .get("https://mycivvi.com/get-loggedin")
+            .then(function (response) {
+              var data = response.data;
+              self.firstName = data.session.first_name;
+              self.lastName = data.session.last_name;
+              self.seeker_id = data.session.seeker_id;
+              self.email = data.session.email;
+              self.phoneNumber = data.session.phone_number;
+              self.interests = data.session.interests;
+              self.currentTitle = data.session.current_title;
+              self.currentCompany = data.session.current_company;
+              self.password = data.session.password;
+              if (data.session.jobs_applied == null) {
+                self.applied = data.session.jobs_applied;
+              } else {
+                self.applied = data.session.jobs_applied.split(",").map(Number);
+              }
+              self.resumePath = data.session.resume_path.split("/").pop();
+              self.jobs = data.results;
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        },
+        methods: {
+          apply(job_id, company, title, poster_id) {
+            axios
+              .post("/job_seeker/apply/", {
+                seeker_id: this.seeker_id,
+                email: this.email,
+                job_title: title,
+                company_name: company,
+                job_id: job_id,
+                employer_id: poster_id,
+                first_name: this.firstName,
+                last_name: this.lastName,
+                resume_path: this.resumePath,
+              })
+              .then((response) => {
+                // handle successful response
+                console.log(response.data);
+                this.getdata();
+              })
+              .catch((error) => {
+                // handle error response
+                console.error(error);
+              });
+          },
+          getdata() {
+            var self = this;
+            axios
+              .get("https://mycivvi.com/get-loggedin")
+              .then(function (response) {
+                var data = response.data;
+                self.firstName = data.session.first_name;
+                self.lastName = data.session.last_name;
+                self.seeker_id = data.session.seeker_id;
+                self.email = data.session.email;
+                self.phoneNumber = data.session.phone_number;
+                self.interests = data.session.interests;
+                self.currentTitle = data.session.current_title;
+                self.currentCompany = data.session.current_company;
+                self.password = data.session.password;
+                if (data.session.jobs_applied == null) {
+                  self.applied = data.session.jobs_applied;
+                } else {
+                  self.applied = data.session.jobs_applied
+                    .split(",")
+                    .map(Number);
+                }
+                self.resumePath = data.session.resume_path.split("/").pop();
+                self.jobs = data.results;
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Applicants</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<style>
+a {
+     cursor:pointer;
+     color:blue;
+     text-decoration:underline;
+}
+
+	</style>
+</head>
+
+<body>
+    <div id="app">
+        <p>Applicants for {{ positionName }}</p>
+        <a href="/logout">Logout</a>
+        <a href="/open">Back</a>
+	<a @click="switchval()">{{ this.possible ? "See Rejected" : "See Matches" }}</a>
+	<div v-if="this.possible">
+		<table>
+		    <thead>
+			<tr>
+			    <th>Name</th>
+			    <th>Email</th>
+			    <th>Phone</th>
+			    <th>Date</th>
+			    <th></th>
+			</tr>
+		    </thead>
+		    <tbody>
+			<tr v-for="applicant in possibleApplicants" :key="applicant.phone">
+				<td>{{ applicant.fname }} {{ applicant.lname }}</td>
+			    <td>{{ applicant.email }}</td>
+			    <td>{{ applicant.phone }}</td>
+			    <td>Applied {{ calculateElapsedTime(applicant.date_time) }}</td>
+			    <td>
+				<a @click="viewed(applicant.id)" :href="'/rating?name='+applicant.fname+' '+applicant.lname+'&iframeSrc=https://mpengs.com/resumes/' + applicant.phone + '_.pdf'">View</a>
+			    </td>
+			    <td>
+
+				<a @click="sendRejectionEmail(positionName, applicant.email, applicant.fname, applicant.lname); deleteapp(applicant.id)">Reject</a>
+			    </td>
+			    <td>
+				<a @click="setupInterviewEmail(positionName, applicant.email, applicant.fname, applicant.lname); viewed(applicant.id)" :href="'/applicant?name=' + positionName">Set Interview</a>
+			    </td>
+			    <td>
+				<span v-if="applicant.viewed">&#128065;</span>
+			    </td>
+			</tr>
+		    </tbody>
+		</table>
+	</div>
+
+	<div v-if="!this.possible">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="applicant in rejectedApplicants" :key="applicant.phone">
+                                <td>{{ applicant.fname }} {{ applicant.lname }}</td>
+                            <td>{{ applicant.email }}</td>
+                            <td>{{ applicant.phone }}</td>
+                            <td>Applied {{ calculateElapsedTime(applicant.date_time) }}</td>
+                            <td>
+                                <a :href="'https://mpengs.com/resumes/' + applicant.phone + '_.pdf'">View</a>
+                            </td>
+                            <td>
+
+                                <a @click="sendRejectionEmail(positionName, applicant.email, applicant.fname, applicant.lname); antideleteapp(applicant.id)">Anti-Reject</a>
+                            </td>
+                            <td>
+                                <a @click="setupInterviewEmail(positionName, applicant.email, applicant.fname, applicant.lname); viewed(applicant.id)" :href="'/applicant?name=' + positionName">Set Interview</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+	</div>
+</div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                positionName: '', // Placeholder for the position name
+                possibleApplicants: [],   // Placeholder for the applicant data
+                rejectedApplicants: [],  
+		company_name: "MP Engineers + Architects",
+		possible: true
+	},
+            mounted() {
+                const query = window.location.search.substring(1);
+                const params = new URLSearchParams(query);
+                const positionName = params.get('name'); // Assumes the query parameter is named 'position'
+
+                axios.get(`/api/applicants/${positionName}`)
+                    .then(response => {
+                        this.positionName = positionName;
+                        const applicants = response.data;
+                	this.possibleApplicants = applicants.filter(applicant => applicant.rejected === 0);
+                    	this.rejectedApplicants = applicants.filter(applicant => applicant.rejected === 1);    
+		})
+                    .catch(error => {
+                        console.error(error);
+                    });
+            },
+	    methods: {
+
+          viewed(id) {
+            axios
+              .post("/employer/mark_as_viewed/" + id)
+              .then((response) => {
+                console.log(response.data);
+                this.getdata();
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          },
+          calculateElapsedTime(startTime) {
+            const startMoment = moment(startTime);
+            const currentMoment = moment();
+            const duration = moment.duration(currentMoment.diff(startMoment));
+
+            const days = Math.floor(duration.asDays());
+            const hours = duration.hours();
+            const minutes = duration.minutes();
+            const seconds = duration.seconds();
+            if (minutes < 60 && hours < 1 && days < 1) {
+              return `${minutes + 60} minutes ago`;
+            } else if (hours < 24 && days < 1) {
+              return `${hours} hours ago`;
+            } else if (minutes < 1 && hours < 1) {
+              return "just now";
+			} else if (days == NaN){
+			return 'unknown'
+				    }
+		else {
+              return `${days} days`;
+            } 
+
+            //return `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+          },
+          sendRejectionEmail(title, email, first, last) {
+            axios
+              .post("/employer/sendrejection", {
+                first_name: first,
+                last_name: last,
+                job_title: title,
+                email: email,
+                company_name: this.company_name,
+              })
+              .then((response) => {})
+              .catch((error) => {
+                this.error = error.message || "Unknown error";
+              });
+          },
+          setupInterviewEmail(title, email, first, last) {
+            axios
+              .post("/employer/setinterview", {
+                first_name: first,
+                last_name: last,
+                job_title: title,
+                email: email,
+                company_name: this.company_name,
+              })
+              .then((response) => {})
+              .catch((error) => {
+                this.error = error.message || "Unknown error";
+              });
+          },
+          deleteapp(id) {
+            axios
+              .post("/job_applications/delete", { id })
+              .then((response) => {
+                console.log(response.data);
+                this.getdata();
+                // Perform any necessary actions after successful deletion
+              })
+              .catch((error) => {
+                console.error(error);
+                // Handle error
+              });
+          },
+          antideleteapp(id) {
+            axios
+              .post("/job_applications/anti-delete", { id })
+              .then((response) => {
+                console.log(response.data);
+                this.getdata();
+                // Perform any necessary actions after successful deletion
+              })
+              .catch((error) => {
+                console.error(error);
+                // Handle error
+              });
+          },
+	getdata(){
+                const query = window.location.search.substring(1);
+                const params = new URLSearchParams(query);
+                const positionName = params.get('name'); // Assumes the query parameter is named 'position'
+
+                axios.get(`/api/applicants/${positionName}`)
+                    .then(response => {
+                        this.positionName = positionName;
+                        const applicants = response.data;
+                        this.possibleApplicants = applicants.filter(applicant => applicant.rejected === 0);
+                        this.rejectedApplicants = applicants.filter(applicant => applicant.rejected === 1);    
+		})
+                    .catch(error => {
+                        console.error(error);
+                    });
+	  },
+	  switchval(){
+		this.possible = !this.possible;
+	}
+	}
+        });
+    </script>
+</body>
+</html>
+

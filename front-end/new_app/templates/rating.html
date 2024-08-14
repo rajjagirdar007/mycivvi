@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vue.js Iframe and Form Layout with Axios</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body >
+	<div id="app">
+	    <h2>Rate Resume for {{name}}</h2>
+    <div class="container">
+        <div class="left-panel">
+            <iframe :src="iframeSrc"></iframe>
+        </div>
+        <div class="right-panel">
+            <form @submit.prevent="submitForm">
+	
+		
+			<div class="tag-list">
+				<h3>Select Relevant Tags</h3>
+				<label v-for="(tag, index) in this.displayedTags" :key="index" class="tag-label">
+				<input type="checkbox" :value="tag" v-model="formData.selectedTags">
+				{{ tag }}
+			    </label>
+			    <button @click="prevresumeTags" v-if="this.currentresumePage != 1">Prev</button>
+			    <button @click="nextresumeTags">Next</button>
+
+			</div>
+
+			<div class="tag-list">
+				<h3>Rate how candidate fits with your needs.</h3>
+			    <label v-for="(tag, index) in this.displayedTags1" :key="index" class="tag-label">
+				<input type="checkbox" :value="tag" v-model="formData.selectedRatingTags">
+				{{ tag }}
+			    </label>
+			    <button @click="prevrankTags" v-if="this.currentrankPage != 1">Prev</button>
+			    <button @click="nextrankTags">Next</button>
+
+			</div>
+
+
+
+		    <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+	</div>
+    <style>
+        .container {
+            display: flex;
+        }
+	iframe{
+		width: 50vw;
+		height: 70vh;
+		margin-top: 15vh;
+	}
+
+	form{
+display: flex;
+    flex-direction: column;
+	margin-top: 50%;
+	}
+        .left-panel {
+		padding-left: 2vw;
+	}
+
+        .right-panel {
+        }
+
+        .tag-list {
+            margin-top: 10px;
+        }
+
+        .tag-label {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+		resumeTags: [
+		  'JavaScript', 'Python', 'Java', 'C++', 'Ruby',
+		  'Web Development', 'Mobile App Development', 'Front-end', 'Back-end',
+		  'Data Analysis', 'Machine Learning', 'AI', 'Data Science', 'Big Data',
+		  'Project Management', 'Agile', 'Scrum', 'Leadership',
+		  'Communication Skills', 'Problem Solving', 'Teamwork',
+		  'Customer Service', 'Sales', 'Marketing', 'Social Media',
+		  'Finance', 'Accounting', 'Budgeting', 'Financial Analysis',
+		  'Graphic Design', 'UI/UX Design', 'Adobe Creative Suite',
+		  'Content Writing', 'Copywriting', 'Blogging', 'SEO',
+		  'Networking', 'Security', 'Cloud Computing', 'DevOps',
+		  'Linux', 'Windows', 'Networking Protocols', 'TCP/IP',
+		  'Time Management', 'Organizational Skills', 'Adaptability',
+		  'Bachelor\'s Degree', 'Master\'s Degree', 'Certification',
+		  'Remote Work', 'Customer Relationship Management (CRM)',
+		  'Troubleshooting', 'Database Management', 'SQL',
+		  'Retail', 'E-commerce', 'Supply Chain', 'Logistics',
+		  'Healthcare', 'Pharmaceutical', 'Medical Coding',
+		  'Education', 'Teaching', 'Curriculum Development',
+		  'Manufacturing', 'Quality Control', 'Six Sigma',
+		  'Construction', 'Architecture', 'Project Estimation'
+		],
+		resumeRatingTags : [
+		  'Excellent Match', 'Strong Match', 'Good Match', 'Potential Match',
+		  'Highly Qualified', 'Qualified', 'Moderately Qualified', 'Potential',
+		  'Top Candidate', 'Competitive Candidate', 'Promising Candidate', 'Consider',
+		  'Great Fit', 'Good Fit', 'Fit', 'Possible Fit',
+		  'Highly Relevant', 'Relevant', 'Somewhat Relevant', 'Possible Relevance',
+		  'Outstanding Skills', 'Strong Skills', 'Good Skills', 'Developing Skills',
+		  'Impressive Experience', 'Solid Experience', 'Relevant Experience', 'Limited Experience',
+		  'Exceptional Education', 'Strong Education', 'Relevant Education', 'Educational Background',
+		  'Excellent Communication', 'Strong Communication', 'Effective Communicator', 'Communicative',
+		  'Superior Problem Solver', 'Strong Problem Solving', 'Analytical', 'Problem-Solving Ability',
+		  'Strong Leadership', 'Leadership Skills', 'Effective Leader', 'Leadership Potential',
+		  'Adaptable', 'Flexible', 'Versatile', 'Quick Learner',
+		  'Detail-Oriented', 'Attention to Detail', 'Thorough', 'Meticulous',
+		  'Innovative', 'Creative', 'Original Ideas', 'Inventive',
+		  'Team Player', 'Collaborative', 'Works Well in Teams', 'Teamwork Skills'
+		],
+		 iframeSrc: '',
+		name: '',
+               	 formData: {
+                    name: '',
+                    email: '',
+                    selectedTags: [],
+                    selectedRatingTags: [],
+		
+                },
+		currentresumePage: 1,
+		currentrankPage: 1,
+            },
+            created() {
+                const queryParams = new URLSearchParams(window.location.search);
+                this.iframeSrc = queryParams.get('iframeSrc');
+                this.name = queryParams.get('name');
+            },
+            methods: {
+                async submitForm() {
+                    try {
+                        const response = await axios.post('https://your-api-endpoint', this.formData);
+                        console.log(response.data);
+                        // Reset form data after successful submission
+                        this.formData.name = '';
+                        this.formData.email = '';
+                    } catch (error) {
+                        console.error(error);
+                    }
+                },
+                nextresumeTags() {
+                    this.currentresumePage++;
+                    if (this.currentresumePage > Math.ceil(this.resumeTags.length / 10)) {
+                        this.currentresumePage = 1;
+                    }
+                },
+                prevresumeTags() {
+                    this.currentresumePage--;
+                },
+                nextrankTags() {
+                    this.currentrankPage++;
+                    if (this.currentrankPage > Math.ceil(this.resumeRatingTags.length / 10)) {
+                        this.currentrankPage = 1;
+                    }
+                },
+                prevrankTags() {
+                    this.currentrankPage--;
+                }
+
+
+            },
+            computed: {
+
+		displayedTags() {
+                    const startIndex = (this.currentresumePage - 1) * 10;
+                    const endIndex = startIndex + 10;
+                    const displayed = this.resumeTags.slice(startIndex, endIndex);
+                    const selectedSet = new Set(this.selectedTags);
+                    const selectedTags = displayed.filter(tag => selectedSet.has(tag));
+                    const unselectedTags = displayed.filter(tag => !selectedSet.has(tag));
+                    return [...selectedTags, ...unselectedTags];
+                },
+                displayedTags1() {
+                    const startIndex = (this.currentrankPage - 1) * 10;
+                    const endIndex = startIndex + 10;
+                    const displayed = this.resumeRatingTags.slice(startIndex, endIndex);
+                    const selectedSet = new Set(this.selectedRatingTags);
+                    const selectedTags = displayed.filter(tag => selectedSet.has(tag));
+                    const unselectedTags = displayed.filter(tag => !selectedSet.has(tag));
+                    return [...selectedTags, ...unselectedTags];
+                }
+	
+		},
+        });
+    </script>
+</body>
+</html>
+

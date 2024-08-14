@@ -1,0 +1,38 @@
+const express = require('express');
+const mysql = require('mysql2');
+const bodyParser = require('body-parser');
+const multer = require('multer');
+
+const app = express();
+
+const upload = multer({ dest: '/var/www/mycivvi.com/front-end/new_app/resumes' });
+// create connection to MySQL database
+/*const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'your_database_username',
+  password: 'your_database_password',
+  database: 'your_database_name'
+});
+*/
+// middleware to parse request body
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// define a route
+app.get('/', (req, res) => {
+ 	res.sendFile('/var/www/mycivvi.com/front-end/new_app/register_seeker.html') 
+});
+
+
+// define a route to handle file uploads
+app.post('/upload', upload.single('resume'), (req, res) => {
+  const { filename, mimetype, size } = req.file;
+  console.log(`Received file ${filename} of type ${mimetype} and size ${size}`);
+  res.sendStatus(200);
+});
+
+// start the server
+app.listen(3034, () => {
+  console.log('Server listening on port 3034');
+});
+

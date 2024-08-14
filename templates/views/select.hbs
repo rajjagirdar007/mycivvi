@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>mycivvi</title>
+	</head>
+
+	<body>
+		<ul>
+            {{#each data}}
+                <li><form action="/getButton" method="post"><input id="button" name="button" type="hidden" value="{{this.name}}"><button type="submit" value="{{this.name}}">{{this.name}}</button></form></li>
+            {{/each}}
+        </ul>
+		<a href="/insert">insert</a>
+		<a href = "/login">login</a>
+	</body>
+</html>

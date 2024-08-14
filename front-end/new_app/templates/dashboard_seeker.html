@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  </head>
+  <body>
+    <div id="app">
+      <div class="container mt-5">
+        <div class="row">
+          <div class="col-md-6 offset-md-3">
+            <h1 class="mb-4">User Dashboard</h1>
+            <div class="card">
+              <div class="card-body">
+		      <h5 class="card-title">{{ firstName }} {{ lastName }}  {{seeker_id}} </h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ email }}</h6>
+                <p class="card-text">Phone Number: {{ phoneNumber }}</p>
+                <p class="card-text">Interests: {{ interests }}</p>
+                <p class="card-text">Current Title: {{ currentTitle }}</p>
+                <p class="card-text">Current Company: {{ currentCompany }}</p>
+                <p class="card-text">Password: {{ password }}</p>
+                <p class="card-text">Resume: <a :href=" '/resumes/' + resumePath" target="_blank">{{ resumePath }}</a></p>
+		<p class="card-text"><a>Jobs Applied ({{applied.length - 1 }})<a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+	<div class="container">
+	  <div class="row justify-content-center justify-content-md-start">
+	    <div class="col-md-3" v-for="job in jobs" v-if="!applied.includes(job.job_id)">
+		<div class="card p-3 m-3">
+		  <h5 class="card-title">{{job.job_title}}</h5>
+		  <p class="card-text">Job Description: {{job.job_desc}}</p>
+		  <button class="btn btn-primary" @click="apply(job.job_id, job.company_name, job.job_title, job.poster_id)">Apply to this Job</button>
+		</div>
+	    </div>
+	  </div>
+	</div>
+
+     	{{applied}}
+	{{jobs}}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+      var app = new Vue({
+        el: '#app',
+        data: {
+          firstName: '',
+          lastName: '',
+	  seeker_id: '',
+          email: '',
+          phoneNumber: '',
+          interests: '',
+          currentTitle: '',
+          currentCompany: '',
+          password: '',
+	  applied: [],
+          resumePath: '',
+	  jobs: []
+        },
+	mounted: function() {
+          var self = this;
+          axios.get('https://mycivvi.com/get-loggedin')
+            .then(function(response) {
+              var data = response.data;
+              self.firstName = data.session.first_name;
+              self.lastName = data.session.last_name;
+	      self.seeker_id = data.session.seeker_id;			
+              self.email = data.session.email;
+              self.phoneNumber = data.session.phone_number;
+              self.interests = data.session.interests;
+              self.currentTitle = data.session.current_title;
+              self.currentCompany = data.session.current_company;
+              self.password = data.session.password;
+	      			if(data.session.jobs_applied == null){
+				self.applied = data.session.jobs_applied;
+				    } else {
+				self.applied = data.session.jobs_applied.split(',').map(Number);			
+				}
+	      self.resumePath = data.session.resume_path.split('/').pop();
+	      self.jobs = data.results;			
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        },
+	methods: {
+	  apply(job_id, company, title, poster_id) {
+	    axios.post('/job_seeker/apply/', { 
+		seeker_id: this.seeker_id,
+		email: this.email,
+		job_title: title,
+		company_name: company,
+		job_id: job_id,
+		employer_id: poster_id,
+		first_name: this.firstName,
+		last_name: this.lastName,
+		resume_path: this.resumePath		
+			})
+	      .then(response => {
+		// handle successful response
+		console.log(response.data);
+		this.getdata();		  
+	      })
+	      .catch(error => {
+		// handle error response
+		console.error(error);
+	      });
+	  },
+	  getdata() {
+		  var self = this;
+		  axios.get('https://mycivvi.com/get-loggedin')
+		    .then(function(response) {
+		      var data = response.data;
+		      self.firstName = data.session.first_name;
+		      self.lastName = data.session.last_name;
+		      self.seeker_id = data.session.seeker_id;                  
+		      self.email = data.session.email;
+		      self.phoneNumber = data.session.phone_number;
+		      self.interests = data.session.interests;
+		      self.currentTitle = data.session.current_title;
+		      self.currentCompany = data.session.current_company;
+		      self.password = data.session.password;
+					if(data.session.jobs_applied == null){
+					self.applied = data.session.jobs_applied;
+					    } else {
+					self.applied = data.session.jobs_applied.split(',').map(Number);                    
+					}
+		      self.resumePath = data.session.resume_path.split('/').pop();
+		      self.jobs = data.results;                 
+		    })
+		    .catch(function(error) {
+		      console.log(error);
+		    });
+
+		 }
+	}	
+      });
+    </script>
+  </body>
+</html>
+

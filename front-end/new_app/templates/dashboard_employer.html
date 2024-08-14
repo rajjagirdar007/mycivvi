@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Employer Dashboard</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+.add{
+	float: right;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  padding: 10px;
+}
+.grid-item {
+  padding: 20px;
+  text-align: center;
+}
+	 .green {
+  background-color: #b5cdb7;
+}
+.white {
+  background-color: white;
+}
+</style>
+</head>
+
+<body>
+  <div id="app" class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="my-4">Employer Dashboard</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card my-4">
+          <div class="card-body">
+            <h5 class="card-title">Company Information</h5>
+            <p class="card-text"><strong>Company Name:</strong> {{ company_name }}</p>
+            <p class="card-text"><strong>Industry:</strong> {{ company_industry }}</p>
+            <p class="card-text"><strong>Location:</strong> {{ company_location }}</p>
+          </div>
+        </div>
+        <div class="card my-4">
+          <div class="card-body">
+            <h5 class="card-title">Account Information</h5>
+            <p class="card-text"><strong>Email:</strong> {{ email }}</p>
+          </div>
+        </div>
+        <div class="card my-4">
+          <div class="card-body">
+            <h5 class="card-title">Change Password</h5>
+            <form>
+              <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <input type="password" class="form-control" id="current-password" v-model="currentPassword">
+              </div>
+              <div class="form-group">
+                <label for="new-password">New Password</label>
+                <input type="password" class="form-control" id="new-password" v-model="newPassword">
+              </div>
+              <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" class="form-control" id="confirm-password" v-model="confirmPassword">
+              </div>
+              <button type="submit" class="btn btn-primary" v-on:click.prevent="changePassword">Change Password</button>
+            </form>
+          </div>
+        </div>
+      </div>
+       
+        <div class="col-md-8">
+        <div class="card my-4">
+          <div class="card-body">
+            <h5 class="card-title">Jobs Posted</h5>
+	    <p class="card-text"><a href="/employer/addjob">Add Job</a><p>
+	    <div class="grid-container">
+	    		<!--<div class="card grid-item p-3" v-for="job in jobs">
+				<h6 class="card-title">{{job.job_title}}</h6>
+				<p><a :href="'/employer/editjob/' + job.job_id">Edit Job</a></p>
+				<div v-for="app in applications" v-if="app.job_id == job.job_id" :class="{ green: app.viewed, white: !app.viewed, card: true }">
+					<p class="card-title">{{app.first_name}} {{app.last_name}}</p>
+					<p class=""><a :href="'mailto:' + app.seeker_email">Contact Applicant</a><p>
+					<p class=""><a :href=" 'https://mycivvi.com/resumes/' + app.resume_path" target="_blank" @click="viewed(app.seeker_id)" >View Resume</a></p>
+					<p>Applied {{ calculateElapsedTime(app.time_date) }} ago</p>
+					
+					<p v-if="app.viewed" class="tag">{{ app.tags }}</p>
+
+				        <form class="flex" v-if="app.viewed" method="post" :action="'/employer/addtag/' + app.application_id">
+					    <input class="form-control" name="tag" id="tag" type="text">
+					    <button class="btn btn-primary" type="submit">Add Tag</button>
+					</form>
+				</div>
+			</div>-->
+			<div class="row row-cols-1 row-cols-md-2 g-4">
+			    <div class="col" v-for="job in jobs">
+				<div class="card h-100">
+				    <div class="card-body">
+					<h5 class="card-title">{{job.job_title}}</h5>
+					<p><a :href="'/employer/editjob/' + job.job_id" class="btn btn-primary">Edit Job</a></p>
+					<div v-for="app in applications" v-if="app.job_id == job.job_id" :class="{ 'green': app.viewed, 'bg-white': !app.viewed, card: true, 'mb-3': true }">
+					    <div class="card-body">
+						<h6 class="card-subtitle mb-2">{{app.first_name}} {{app.last_name}}</h6>
+						<p><a :href="'mailto:' + app.seeker_email" class="btn btn-secondary">Contact Applicant</a></p>
+						<p><a @click="sendRejectionEmail(job.job_title, app.seeker_email, app.first_name, app.last_name); deleteapp(app.application_id)" class="btn btn-danger">Reject Applicant</a></p>
+						<p><a @click="setupInterviewEmail(job.job_title, app.seeker_email, app.first_name, app.last_name);" class="btn btn-primary">Send Interview Request</a></p>
+						<p><a :href="'https://mycivvi.com/resumes/' + app.resume_path" target="_blank" class="btn btn-secondary" @click="viewed(app.application_id)">View Resume</a></p>
+						<p class="card-text">Applied {{ calculateElapsedTime(app.time_date) }}</p>
+						<p v-if="app.viewed" class="card-text"><span class="badge bg-primary">{{ app.tags }}</span></p>
+						<form class="d-flex" v-if="app.viewed" method="post" :action="'/employer/addtag/' + app.application_id">
+						    <input class="form-control me-2" name="tag" id="tag" type="text" placeholder="Add tag...">
+						    <button class="btn btn-primary" type="submit">Add</button>
+						</form>
+					    </div>
+					</div>
+				    </div>
+				</div>
+			    </div>
+			</div>
+
+
+	    </div>
+          </div>
+        </div>
+      </div>  
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        company_name: '',
+        company_industry: '',
+        company_location: '',
+        email: '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+	jobs:[],
+	applications: [],
+	tagInput: ''
+      },
+      methods: {
+        changePassword: function() {
+          // You can add the code to change the password here
+        },
+	viewed(id) {
+		axios.post('/employer/mark_as_viewed/' + id)
+			.then(response => {
+			  console.log(response.data);
+			  this.getdata();
+			})
+			.catch(error => {
+			  console.error(error);
+			});
+
+		},
+         calculateElapsedTime(startTime) {
+	      const startMoment = moment(startTime);
+	      const currentMoment = moment();
+	      const duration = moment.duration(currentMoment.diff(startMoment));
+
+	      const days = Math.floor(duration.asDays());
+	      const hours = duration.hours();
+	      const minutes = duration.minutes();
+	      const seconds = duration.seconds();
+		if (minutes < 60 && hours < 1 && days < 1){
+				return `${minutes} minutes ago`;
+			    }else if (hours < 24 && days < 1) {
+
+				return `${hours} hours ago`;
+
+					}else if (minutes < 1 && hours < 1){
+						return 'just now';
+						    }else{
+
+				return `${days} days`;
+						    }
+
+	      //return `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+	    },
+	      sendRejectionEmail(title, email, first, last) {
+		axios.post('/employer/sendrejection', {
+		  first_name: first,
+		  last_name: last,
+		  job_title: title,
+		  email: email,		    
+		  company_name: this.company_name
+		})
+		.then(response => {
+		})
+		.catch(error => {
+		  this.error = error.message || 'Unknown error';
+		});
+	      },
+              setupInterviewEmail(title, email, first, last) {
+                axios.post('/employer/setinterview', {
+                  first_name: first,
+                  last_name: last,
+                  job_title: title,
+                  email: email,             
+                  company_name: this.company_name
+                })
+                .then(response => {
+                })
+                .catch(error => {
+                  this.error = error.message || 'Unknown error';
+                });
+              },
+		deleteapp(id){
+		  axios.post('/job_applications/delete', { id })
+		    .then(response => {
+		      console.log(response.data);
+		      this.getdata();
+			// Perform any necessary actions after successful deletion
+		    })
+		    .catch(error => {
+		      console.error(error);
+		      // Handle error
+		    });
+
+		},
+		getdata() {
+			
+	          var self = this;
+		  axios.get('https://mycivvi.com/employer/get-loggedin')
+		    .then(function(response) {
+		      var data = response.data;
+		      self.company_name = data.session.company_name;
+		      self.company_industry = data.session.company_industry;
+		      self.company_location = data.session.company_location;
+		      self.email = data.session.email;
+		      self.password = data.session.password;
+		      self.jobs = data.results;
+		      self.applications = data.results2;
+		    })
+		    .catch(function(error) {
+		      console.log(error);
+		    });
+
+
+		}
+      },
+	mounted: function() {
+          var self = this;
+          axios.get('https://mycivvi.com/employer/get-loggedin')
+            .then(function(response) {
+              var data = response.data;
+              self.company_name = data.session.company_name;
+              self.company_industry = data.session.company_industry;
+              self.company_location = data.session.company_location;
+              self.email = data.session.email;
+              self.password = data.session.password;
+	      self.jobs = data.results;
+	      self.applications = data.results2;
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+
+	
+        }		      
+    });
+  </script>
+</body>
+
+</html>
+

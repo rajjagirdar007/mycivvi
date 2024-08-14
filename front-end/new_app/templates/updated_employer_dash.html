@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.js"></script>
+
+    <style>
+      #app {
+        margin: 50px auto;
+        max-width: 800px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <ul class="nav nav-tabs">
+          <li v-for="job in jobs" :key="job.job_id" class="nav-item">
+            <a
+              :href="'#tab-' + job.job_id"
+              class="nav-link"
+              :class="{ active: job.job_id === activeJobId }"
+              @click="changeActiveJob(job.job_id)"
+            >
+              {{ job.job_title }}
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <div
+            v-for="job in jobs"
+            :key="job.job_id"
+            :id="'tab-' + job.job_id"
+            class="tab-pane"
+            :class="{ active: job.job_id === activeJobId }"
+          >
+            <h3>Applicants for {{ job.job_title }}</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <!-- Add more columns for applicant data if needed -->
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="applicant in getJobApplicants(job.job_id)"
+                  :key="applicant.email"
+                >
+                  <td>{{ applicant.first_name }} {{applicant.last_name}}</td>
+                  <td>
+                    <p>
+                      <a
+                        :href="'https://mycivvi.com/resumes/' + applicant.resume_path"
+                        target=" blank"
+                        class="btn btn-secondary"
+                        @click="viewed(applicant.application_id)"
+                        >View Resume</a
+                      >
+                    </p>
+                  </td>
+                  <!-- Render other applicant data here -->
+                  <td>
+                    <p>
+                      <a
+                        @click="setupInterviewEmail(job.job_title, applicant.seeker_email, applicant.first_name,
+				applicant.last_name);"
+                        class="btn btn-primary"
+                        >Send Interview Request</a
+                      >
+                    </p>
+                  </td>
+                  <td>
+                    <p>
+                      <a
+                        @click="sendRejectionEmail(job.job_title, applicant.seeker_email, applicant.first_name, applicant.last_name); deleteapp(applicant.application_id)"
+                        class="btn btn-danger"
+                        >Reject Applicant</a
+                      >
+                    </p>
+                  </td>
+                  <td>
+                    <p v-if="applicant.viewed">
+                      <span class="badge bg-primary">{{ applicant.tags }}</span>
+                    </p>
+                  </td>
+
+                  <td>
+                    <form
+                      class="d-flex"
+                      v-if="applicant.viewed"
+                      method="post"
+                      :action="'/employer/addtag/' + applicant.application_id"
+                    >
+                      <input
+                        class="form-control me-2"
+                        name="tag"
+                        id="tag"
+                        type="text"
+                        placeholder="Add tag..."
+                      />
+                      <button class="btn btn-primary" type="submit">Add</button>
+                    </form>
+                  </td>
+
+                  <td>
+                    <p class="">
+                      Applied {{ calculateElapsedTime(applicant.time_date) }}
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+      integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          company_name: "",
+          company_industry: "",
+          company_location: "",
+          email: "",
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+          jobs: [],
+          applications: [],
+          tagInput: "",
+          activeJobId: null, // Holds the active job_id (selected tab)
+        },
+        methods: {
+          changePassword: function () {
+            // You can add the code to change the password here
+          },
+          viewed(id) {
+            axios
+              .post("/employer/mark_as_viewed/" + id)
+              .then((response) => {
+                console.log(response.data);
+                this.getdata();
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          },
+          calculateElapsedTime(startTime) {
+            const startMoment = moment(startTime);
+            const currentMoment = moment();
+            const duration = moment.duration(currentMoment.diff(startMoment));
+
+            const days = Math.floor(duration.asDays());
+            const hours = duration.hours();
+            const minutes = duration.minutes();
+            const seconds = duration.seconds();
+            if (minutes < 60 && hours < 1 && days < 1) {
+              return `${minutes} minutes ago`;
+            } else if (hours < 24 && days < 1) {
+              return `${hours} hours ago`;
+            } else if (minutes < 1 && hours < 1) {
+              return "just now";
+            } else {
+              return `${days} days`;
+            }
+
+            //return `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+          },
+          sendRejectionEmail(title, email, first, last) {
+            axios
+              .post("/employer/sendrejection", {
+                first_name: first,
+                last_name: last,
+                job_title: title,
+                email: email,
+                company_name: this.company_name,
+              })
+              .then((response) => {})
+              .catch((error) => {
+                this.error = error.message || "Unknown error";
+              });
+          },
+          setupInterviewEmail(title, email, first, last) {
+            axios
+              .post("/employer/setinterview", {
+                first_name: first,
+                last_name: last,
+                job_title: title,
+                email: email,
+                company_name: this.company_name,
+              })
+              .then((response) => {})
+              .catch((error) => {
+                this.error = error.message || "Unknown error";
+              });
+          },
+          deleteapp(id) {
+            axios
+              .post("/job_applications/delete", { id })
+              .then((response) => {
+                console.log(response.data);
+                this.getdata();
+                // Perform any necessary actions after successful deletion
+              })
+              .catch((error) => {
+                console.error(error);
+                // Handle error
+              });
+          },
+          getdata() {
+            var self = this;
+            axios
+              .get("https://mycivvi.com/employer/get-loggedin")
+              .then(function (response) {
+                var data = response.data;
+                self.company_name = data.session.company_name;
+                self.company_industry = data.session.company_industry;
+                self.company_location = data.session.company_location;
+                self.email = data.session.email;
+                self.password = data.session.password;
+                self.jobs = data.results;
+                self.applications = data.results2;
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          },
+
+          changeActiveJob(jobId) {
+            this.activeJobId = jobId;
+          },
+          getJobApplicants(jobId) {
+            return this.applications.filter(
+              (application) => application.job_id === jobId
+            );
+          },
+        },
+        mounted: function () {
+          var self = this;
+          axios
+            .get("https://mycivvi.com/employer/get-loggedin")
+            .then(function (response) {
+              var data = response.data;
+              self.company_name = data.session.company_name;
+              self.company_industry = data.session.company_industry;
+              self.company_location = data.session.company_location;
+              self.email = data.session.email;
+              self.password = data.session.password;
+              self.jobs = data.results;
+              self.applications = data.results2;
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        },
+      });
+    </script>
+  </body>
+</html>

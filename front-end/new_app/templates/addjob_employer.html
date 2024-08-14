@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Add Job</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+	form{
+	margin: auto 0;
+
+	}
+	#center{
+
+		justify-content: center;
+	}
+
+  </style>
+</head>
+
+<body>
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="my-4">Add Job</h1>
+      </div>
+    </div>
+    <div class="row" id="center">
+      <div class="col-md-6">
+        <form method="POST" action="https://mycivvi.com/employer/addjob">
+          <div class="form-group">
+            <label for="jobTitle">Job Title</label>
+            <input type="text" class="form-control" id="jobTitle" name="job_title" required>
+          </div>
+          <div class="form-group">
+            <label for="jobType">Job Type</label>
+            <select class="form-control" id="jobType" name="job_type">
+              <option value="Full-Time">Full-Time</option>
+              <option value="Part-Time">Part-Time</option>
+              <option value="Contract">Contract</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="expectedRate">Expected Rate</label>
+            <input type="number" class="form-control" id="expectedRate" name="expected_rate" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="jobDesc">Job Description</label>
+            <textarea class="form-control" id="jobDesc" name="job_desc" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="jobSkills">Job Skills</label>
+            <textarea class="form-control" id="jobSkills" name="job_skills" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="jobQualifications">Job Qualifications</label>
+            <textarea class="form-control" id="jobQualifications" name="job_qualifications" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="jobDuties">Job Duties</label>
+            <textarea class="form-control" id="jobDuties" name="job_duties" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Add Job</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
+
